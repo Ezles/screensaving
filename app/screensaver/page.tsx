@@ -10,7 +10,6 @@ export default function Screensaver() {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    // Set canvas to fullscreen
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -19,14 +18,12 @@ export default function Screensaver() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Initialize WebGL
     const gl = canvas.getContext('webgl2');
     if (!gl) {
       console.error('WebGL2 not supported');
       return;
     }
 
-    // Start the animation
     initWebGL(gl);
 
     return () => {

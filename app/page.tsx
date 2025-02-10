@@ -49,7 +49,6 @@ export default function Home() {
         className="absolute top-0 left-0 w-full h-full bg-black"
       />
       
-      {/* Pattern Selector Button */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 right-4 z-20 bg-black/30 backdrop-blur-md text-white px-4 py-2 rounded-full 
@@ -58,7 +57,6 @@ export default function Home() {
         {isMenuOpen ? 'Fermer' : 'Changer de Pattern'}
       </button>
 
-      {/* Pattern Menu */}
       <div className={`absolute right-4 top-16 z-20 transition-all duration-300 transform 
                     ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
         <div className="bg-black/30 backdrop-blur-md rounded-2xl p-4 w-64">
@@ -80,7 +78,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Title */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
         <h1 className="text-6xl font-bold text-white text-center mb-4 animate-pulse">
           Screensaver Pro
