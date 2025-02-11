@@ -7,14 +7,12 @@ import { useState, useRef } from "react";
 interface ActionToolbarProps {
   onFullscreen: () => void;
   onDownloadPNG: () => void;
-  onDownloadSCR: () => void;
   isFullscreen: boolean;
 }
 
 export default function ActionToolbar({
   onFullscreen,
   onDownloadPNG,
-  onDownloadSCR,
   isFullscreen,
 }: ActionToolbarProps) {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
