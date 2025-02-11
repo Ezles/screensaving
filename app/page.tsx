@@ -7,7 +7,6 @@ import NavigationBar from "./components/NavigationBar";
 import SettingsPanel from "./components/SettingsPanel";
 import { patterns } from "./screensaver/patterns";
 import { initWebGL } from "./screensaver/webgl";
-import { Image, Wallpaper } from "lucide-react";
 
 const DEFAULT_SETTINGS = {
   color: "#ffffff",
