@@ -249,7 +249,6 @@ export default function Home() {
           <ActionToolbar
             onFullscreen={handleFullscreen}
             onDownloadPNG={() => handleDownload('png')}
-            onDownloadSCR={() => handleDownload('scr')}
             isFullscreen={isFullscreen}
           />
         </div>
