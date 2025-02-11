@@ -99,16 +99,13 @@ export default function Home() {
       if (!canvasRef.current) return;
       const canvas = canvasRef.current;
       
-      // Ajuster la taille physique du canvas en tenant compte du DPR
       const dpr = window.devicePixelRatio;
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       
-      // Ajuster la taille d'affichage CSS
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
       
-      // Si le contexte WebGL existe, ajuster le viewport
       const gl = canvas.getContext('webgl2');
       if (gl) {
         gl.viewport(0, 0, canvas.width, canvas.height);
@@ -234,10 +231,10 @@ export default function Home() {
   
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden">
+    <main className="relative w-screen h-screen overflow-hidden bg-black" style={{ height: '100dvh' }}>
       <canvas
         ref={canvasRef}
-        className="absolute top-0 left-0 w-full h-full bg-black object-cover"
+        className="absolute inset-0 w-full h-full bg-black object-cover"
         style={{
           touchAction: 'none',
           imageRendering: 'pixelated'
@@ -245,7 +242,7 @@ export default function Home() {
       />
 
       <div
-        className={`relative z-10 w-full h-full transition-opacity duration-500 ${
+        className={`relative z-10 w-full h-full transition-opacity duration-500 safe-area-inset-bottom ${
           isFocusMode ? "opacity-0" : "opacity-100"
         }`}
       >
@@ -258,10 +255,10 @@ export default function Home() {
         />
 
         <div className="flex flex-col items-center justify-center w-full h-full">
-          <h1 className="text-6xl font-bold text-white text-center mb-4">
+          <h1 className="text-4xl sm:text-6xl font-bold text-white text-center mb-4 px-4">
             Screensaver Pro
           </h1>
-          <p className="text-xl text-white/80 text-center max-w-md px-4 mb-6">
+          <p className="text-lg sm:text-xl text-white/80 text-center max-w-md px-4 mb-6">
             Une collection de motifs visuels interactifs
           </p>
 

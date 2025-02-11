@@ -39,12 +39,6 @@ export default function SettingsPanel({
         <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-md rounded-lg p-4 w-[calc(100vw-2rem)] sm:w-80 max-h-[80vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-white font-semibold text-lg">Paramètres</h3>
-            <button
-              onClick={handleReset}
-              className="px-3 py-1 rounded-lg text-sm bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
-            >
-              Réinitialiser
-            </button>
           </div>
           
           <div className="space-y-6">
@@ -109,7 +103,7 @@ export default function SettingsPanel({
                     />
                   </div>
                   <button
-                    onClick={() => onControlChange("color", "transparent")}
+                    onClick={handleReset}
                     className={`px-3 py-1 rounded-lg text-sm ${
                       settings.color === 'transparent'
                         ? 'bg-white/20 text-white'
