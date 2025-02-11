@@ -52,16 +52,18 @@ export default function ActionToolbar({
               <Image size={18} aria-hidden="true" />
               Format PNG
             </button>
-            <button
-              onClick={() => {
-                onDownloadSCR();
-                setShowDownloadMenu(false);
-              }}
-              className="w-full text-left px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
-            >
-              <Wallpaper size={18} aria-hidden="true" />
-              Format SCR
-            </button>
+            <div className="group relative">
+              <button
+                disabled
+                className="w-full text-left px-4 py-2 text-white/30 flex items-center gap-2 cursor-not-allowed"
+              >
+                <Wallpaper size={18} aria-hidden="true" />
+                Format SCR
+                <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-black/90 text-white/80 text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  Temporairement désactivé
+                </span>
+              </button>
+            </div>
           </div>
         )}
       </div>
