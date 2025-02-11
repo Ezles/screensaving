@@ -57,7 +57,7 @@ export function initWebGL(
 
   function updateParticles(density: number) {
     if (!currentProgram || !vao || !positionBuffer) return;
-    
+
     currentDensity = density;
     const positions = new Float32Array(density * 2);
     for (let i = 0; i < density * 2; i += 2) {
@@ -95,13 +95,13 @@ export function initWebGL(
       "resolution"
     );
 
-    const speedLocation = gl.getUniformLocation(currentProgram, 'u_speed');
+    const speedLocation = gl.getUniformLocation(currentProgram, "u_speed");
     if (speedLocation) gl.uniform1f(speedLocation, 1.0);
 
-    const densityLocation = gl.getUniformLocation(currentProgram, 'u_density');
+    const densityLocation = gl.getUniformLocation(currentProgram, "u_density");
     if (densityLocation) gl.uniform1f(densityLocation, 1.0);
 
-    const colorLocation = gl.getUniformLocation(currentProgram, 'u_color');
+    const colorLocation = gl.getUniformLocation(currentProgram, "u_color");
     if (colorLocation) gl.uniform3f(colorLocation, -1.0, -1.0, -1.0);
 
     if (vao) {
@@ -114,7 +114,7 @@ export function initWebGL(
       gl.deleteBuffer(positionBuffer);
     }
     positionBuffer = gl.createBuffer();
-    
+
     updateParticles(currentDensity);
 
     gl.enableVertexAttribArray(positionAttributeLocation);
@@ -131,13 +131,15 @@ export function initWebGL(
     if (gl.canvas instanceof HTMLCanvasElement) {
       const displayWidth = window.innerWidth * window.devicePixelRatio;
       const displayHeight = window.innerHeight * window.devicePixelRatio;
-      
-      if (gl.canvas.width !== displayWidth || gl.canvas.height !== displayHeight) {
+
+      if (
+        gl.canvas.width !== displayWidth ||
+        gl.canvas.height !== displayHeight
+      ) {
         gl.canvas.width = displayWidth;
         gl.canvas.height = displayHeight;
         gl.viewport(0, 0, displayWidth, displayHeight);
-        
-        // Ajuster la taille CSS du canvas
+
         gl.canvas.style.width = `${window.innerWidth}px`;
         gl.canvas.style.height = `${window.innerHeight}px`;
       }
@@ -183,6 +185,6 @@ export function initWebGL(
     },
     updateDensity: (newDensity: number) => {
       updateParticles(newDensity);
-    }
+    },
   };
 }

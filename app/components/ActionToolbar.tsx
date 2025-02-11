@@ -1,7 +1,13 @@
 "use client";
 
-import { FiDownload, FiMaximize2, FiMinimize2, FiImage, FiFile } from "react-icons/fi";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
+import {
+  FiDownload,
+  FiFile,
+  FiImage,
+  FiMaximize2,
+  FiMinimize2,
+} from "react-icons/fi";
 
 interface ActionToolbarProps {
   onFullscreen: () => void;
@@ -36,7 +42,7 @@ export default function ActionToolbar({
         >
           <FiDownload size={20} />
         </button>
-        
+
         {showDownloadMenu && (
           <div className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-md rounded-lg py-1 min-w-[180px] shadow-lg">
             <button

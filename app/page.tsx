@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ActionToolbar from "./components/ActionToolbar";
+import Footer from "./components/Footer";
 import ModeIndicator from "./components/ModeIndicator";
 import NavigationBar from "./components/NavigationBar";
 import SettingsPanel from "./components/SettingsPanel";
@@ -34,24 +35,24 @@ export default function Home() {
     const program = gl.getParameter(gl.CURRENT_PROGRAM);
     if (!program) return;
 
-    const speedLocation = gl.getUniformLocation(program, 'u_speed');
+    const speedLocation = gl.getUniformLocation(program, "u_speed");
     if (speedLocation) {
       gl.uniform1f(speedLocation, currentSettings.speed / 50.0);
     }
 
-    const densityLocation = gl.getUniformLocation(program, 'u_density');
+    const densityLocation = gl.getUniformLocation(program, "u_density");
     if (densityLocation) {
       gl.uniform1f(densityLocation, currentSettings.density / 15000.0);
     }
 
-    const colorLocation = gl.getUniformLocation(program, 'u_color');
+    const colorLocation = gl.getUniformLocation(program, "u_color");
     if (colorLocation) {
-      if (currentSettings.color === 'transparent') {
+      if (currentSettings.color === "transparent") {
         gl.uniform3f(colorLocation, -1.0, -1.0, -1.0);
       } else {
-        const r = parseInt(currentSettings.color.substr(1,2), 16) / 255;
-        const g = parseInt(currentSettings.color.substr(3,2), 16) / 255;
-        const b = parseInt(currentSettings.color.substr(5,2), 16) / 255;
+        const r = parseInt(currentSettings.color.substr(1, 2), 16) / 255;
+        const g = parseInt(currentSettings.color.substr(3, 2), 16) / 255;
+        const b = parseInt(currentSettings.color.substr(5, 2), 16) / 255;
         gl.uniform3f(colorLocation, r, g, b);
       }
     }
@@ -94,19 +95,19 @@ export default function Home() {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    
+
     const resizeCanvas = () => {
       if (!canvasRef.current) return;
       const canvas = canvasRef.current;
-      
+
       const dpr = window.devicePixelRatio;
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
-      
+
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
-      
-      const gl = canvas.getContext('webgl2');
+
+      const gl = canvas.getContext("webgl2");
       if (gl) {
         gl.viewport(0, 0, canvas.width, canvas.height);
       }
@@ -114,12 +115,12 @@ export default function Home() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    const gl = canvas.getContext('webgl2', {
+    const gl = canvas.getContext("webgl2", {
       preserveDrawingBuffer: true,
       antialias: true,
       alpha: true,
       premultipliedAlpha: false,
-      depth: true
+      depth: true,
     });
 
     if (!gl) {
@@ -129,7 +130,7 @@ export default function Home() {
 
     glRef.current = gl;
     webGLRef.current = initWebGL(gl, currentPattern);
-    
+
     applySettings();
 
     return () => {
@@ -148,7 +149,10 @@ export default function Home() {
     }
   };
 
-  const handleControlChange = (id: string, value: number | string | boolean) => {
+  const handleControlChange = (
+    id: string,
+    value: number | string | boolean
+  ) => {
     setCurrentSettings((prev) => {
       const newSettings = { ...prev, [id]: value };
       return newSettings;
@@ -168,25 +172,25 @@ export default function Home() {
   };
 
   const formatFileName = (baseName: string, format: string) => {
-    const date = new Date().toISOString().split('T')[0];
-    const sanitizedName = baseName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const date = new Date().toISOString().split("T")[0];
+    const sanitizedName = baseName.toLowerCase().replace(/[^a-z0-9]/g, "-");
     return `screensaver_${sanitizedName}_${date}.${format}`;
   };
 
-  const handleDownload = async (format: 'png' | 'scr') => {
+  const handleDownload = async (format: "png" | "scr") => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
     const fileName = formatFileName(patterns[currentPattern].name, format);
-  
-    if (format === 'png') {
+
+    if (format === "png") {
       try {
-        const tempCanvas = document.createElement('canvas');
+        const tempCanvas = document.createElement("canvas");
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
-        const ctx = tempCanvas.getContext('2d');
+        const ctx = tempCanvas.getContext("2d");
         if (!ctx) return;
 
-        const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
+        const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
         if (gl) {
           gl.flush();
           gl.finish();
@@ -194,28 +198,36 @@ export default function Home() {
 
         ctx.drawImage(canvas, 0, 0);
 
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.download = fileName;
-        link.href = tempCanvas.toDataURL('image/png', 1.0);
+        link.href = tempCanvas.toDataURL("image/png", 1.0);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       } catch (error) {
-        console.error('Erreur lors de la capture PNG:', error);
+        console.error("Erreur lors de la capture PNG:", error);
       }
-    } else if (format === 'scr') {
+    } else if (format === "scr") {
       try {
-        const gl = canvas.getContext('webgl2');
+        const gl = canvas.getContext("webgl2");
         if (!gl) return;
 
         gl.flush();
         gl.finish();
 
         const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-        gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        
-        const blob = new Blob([pixels], { type: 'application/octet-stream' });
-        const link = document.createElement('a');
+        gl.readPixels(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          pixels
+        );
+
+        const blob = new Blob([pixels], { type: "application/octet-stream" });
+        const link = document.createElement("a");
         link.download = fileName;
         link.href = URL.createObjectURL(blob);
         document.body.appendChild(link);
@@ -223,21 +235,22 @@ export default function Home() {
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
       } catch (error) {
-        console.error('Erreur lors de la création du SCR:', error);
+        console.error("Erreur lors de la création du SCR:", error);
       }
     }
   };
-  
-  
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-black" style={{ height: '100dvh' }}>
+    <main
+      className="relative w-screen h-screen overflow-hidden bg-black"
+      style={{ height: "100dvh" }}
+    >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full bg-black object-cover"
         style={{
-          touchAction: 'none',
-          imageRendering: 'pixelated'
+          touchAction: "none",
+          imageRendering: "pixelated",
         }}
       />
 
@@ -264,7 +277,7 @@ export default function Home() {
 
           <ActionToolbar
             onFullscreen={handleFullscreen}
-            onDownloadPNG={() => handleDownload('png')}
+            onDownloadPNG={() => handleDownload("png")}
             isFullscreen={isFullscreen}
           />
         </div>
@@ -276,6 +289,10 @@ export default function Home() {
           settings={currentSettings}
         />
       </div>
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-gray-900/80 via-gray-900/50 to-transparent" />
+      </div>
+      <Footer isFocusMode={isFocusMode} />
     </main>
   );
 }
