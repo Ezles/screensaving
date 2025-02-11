@@ -7,10 +7,9 @@ import NavigationBar from "./components/NavigationBar";
 import SettingsPanel from "./components/SettingsPanel";
 import { patterns } from "./screensaver/patterns";
 import { initWebGL } from "./screensaver/webgl";
-import { Image, Wallpaper } from "lucide-react";
 
 const DEFAULT_SETTINGS = {
-  color: "#ffffff",
+  color: "transparent",
   speed: 50,
   density: 15000,
 };
@@ -18,11 +17,15 @@ const DEFAULT_SETTINGS = {
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentPattern, setCurrentPattern] = useState(0);
-  const changePatternRef = useRef<((index: number) => void) | null>(null);
+  const webGLRef = useRef<{
+    changePattern: (index: number) => void;
+    updateDensity: (density: number) => void;
+  } | null>(null);
   const [isControlsOpen, setIsControlsOpen] = useState(false);
   const [currentSettings, setCurrentSettings] = useState(DEFAULT_SETTINGS);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const glRef = useRef<WebGL2RenderingContext | null>(null);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -60,7 +63,6 @@ export default function Home() {
 
     const canvas = canvasRef.current;
     
-    // Gérer le redimensionnement
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -68,7 +70,6 @@ export default function Home() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Initialiser WebGL avec les bonnes options
     const gl = canvas.getContext('webgl2', {
       preserveDrawingBuffer: true,
       antialias: true,
@@ -82,25 +83,64 @@ export default function Home() {
       return;
     }
 
-    changePatternRef.current = initWebGL(gl, currentPattern);
+    glRef.current = gl;
+    webGLRef.current = initWebGL(gl, currentPattern);
+    
+    applySettings();
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
     };
   }, [currentPattern]);
 
+  useEffect(() => {
+    applySettings();
+  }, [currentSettings]);
+
+  const applySettings = () => {
+    if (!glRef.current || !webGLRef.current) return;
+
+    const gl = glRef.current;
+    const program = gl.getParameter(gl.CURRENT_PROGRAM);
+    if (!program) return;
+
+    const speedLocation = gl.getUniformLocation(program, 'u_speed');
+    if (speedLocation) {
+      gl.uniform1f(speedLocation, currentSettings.speed / 50.0);
+    }
+
+    const densityLocation = gl.getUniformLocation(program, 'u_density');
+    if (densityLocation) {
+      gl.uniform1f(densityLocation, currentSettings.density / 15000.0);
+    }
+
+    const colorLocation = gl.getUniformLocation(program, 'u_color');
+    if (colorLocation) {
+      if (currentSettings.color === 'transparent') {
+        gl.uniform3f(colorLocation, -1.0, -1.0, -1.0);
+      } else {
+        const r = parseInt(currentSettings.color.substr(1,2), 16) / 255;
+        const g = parseInt(currentSettings.color.substr(3,2), 16) / 255;
+        const b = parseInt(currentSettings.color.substr(5,2), 16) / 255;
+        gl.uniform3f(colorLocation, r, g, b);
+      }
+    }
+
+    webGLRef.current.updateDensity(currentSettings.density);
+  };
+
   const handlePatternChange = (index: number) => {
     setCurrentPattern(index);
-    if (changePatternRef.current) {
-      changePatternRef.current(index);
+    if (webGLRef.current) {
+      webGLRef.current.changePattern(index);
     }
   };
 
-  const handleControlChange = (
-    id: string,
-    value: number | string | boolean
-  ) => {
-    setCurrentSettings((prev) => ({ ...prev, [id]: value }));
+  const handleControlChange = (id: string, value: number | string | boolean) => {
+    setCurrentSettings((prev) => {
+      const newSettings = { ...prev, [id]: value };
+      return newSettings;
+    });
   };
 
   const handleFullscreen = async () => {
@@ -128,24 +168,20 @@ export default function Home() {
   
     if (format === 'png') {
       try {
-        // Créer un canvas temporaire avec les bonnes dimensions
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
         const ctx = tempCanvas.getContext('2d');
         if (!ctx) return;
 
-        // Copier le contenu du WebGL canvas
         const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
         if (gl) {
           gl.flush();
           gl.finish();
         }
 
-        // Dessiner le canvas WebGL sur le canvas temporaire
         ctx.drawImage(canvas, 0, 0);
 
-        // Télécharger l'image
         const link = document.createElement('a');
         link.download = fileName;
         link.href = tempCanvas.toDataURL('image/png', 1.0);

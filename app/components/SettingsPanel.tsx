@@ -1,12 +1,16 @@
 "use client";
 
-import { FiSettings } from "react-icons/fi";
+import { Settings } from "lucide-react";
 
 interface SettingsPanelProps {
   isOpen: boolean;
   onToggle: () => void;
   onControlChange: (id: string, value: number | string | boolean) => void;
-  settings: Record<string, number | string | boolean>;
+  settings: {
+    color: string;
+    speed: number;
+    density: number;
+  };
 }
 
 export default function SettingsPanel({
@@ -15,68 +19,103 @@ export default function SettingsPanel({
   onControlChange,
   settings,
 }: SettingsPanelProps) {
+  const handleReset = () => {
+    onControlChange("speed", 50);
+    onControlChange("density", 15000);
+    onControlChange("color", "transparent");
+  };
+
   return (
-    <div className="absolute bottom-4 right-4 z-20">
+    <div className="fixed bottom-4 right-4 z-50">
       <button
         onClick={onToggle}
-        className="bg-black/30 backdrop-blur-md p-2 rounded-full text-white/80 hover:bg-white/10 transition-all"
+        className="bg-black/30 backdrop-blur-md p-2 rounded-full text-white/80 hover:text-white transition-all hover:bg-white/10"
+        title="Paramètres"
       >
-        <FiSettings size={20} />
+        <Settings size={24} />
       </button>
 
-      <div
-        className={`absolute bottom-full right-0 mb-2 transition-all duration-300 transform origin-bottom-right
-                  ${
-                    isOpen
-                      ? "scale-100 opacity-100"
-                      : "scale-95 opacity-0 pointer-events-none"
-                  }`}
-      >
-        <div className="bg-black/30 backdrop-blur-md rounded-2xl p-6 w-80">
-          <h3 className="text-white font-medium mb-4">Personnalisation</h3>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-white/80 block">Couleur</label>
+      {isOpen && (
+        <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-md rounded-lg p-4 w-64">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-white font-semibold">Paramètres</h3>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-white/80 text-sm">Vitesse</label>
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className={`w-2 h-2 rounded-full ${settings.speed < 33 ? 'bg-blue-400' : settings.speed < 66 ? 'bg-green-400' : 'bg-red-400'}`} />
+                </div>
+              </div>
               <input
-                type="color"
-                value={settings.color as string}
-                className="w-full h-10 rounded bg-white/10"
-                onChange={(e) => onControlChange("color", e.target.value)}
+                type="range"
+                min="1"
+                max="100"
+                value={settings.speed}
+                onChange={(e) => onControlChange("speed", parseInt(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-white/80 block">Vitesse</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={settings.speed as number}
-                  className="w-full"
-                  onChange={(e) =>
-                    onControlChange("speed", parseFloat(e.target.value))
-                  }
-                />
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-white/80 text-sm">Densité</label>
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className={`w-2 h-2 rounded-full ${settings.density < 10000 ? 'bg-blue-400' : settings.density < 20000 ? 'bg-green-400' : 'bg-red-400'}`} />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-white/80 block">Densité</label>
-                <input
-                  type="range"
-                  min="1000"
-                  max="50000"
-                  step="1000"
-                  value={settings.density as number}
-                  className="w-full"
-                  onChange={(e) =>
-                    onControlChange("density", parseFloat(e.target.value))
-                  }
-                />
+              <input
+                type="range"
+                min="1500"
+                max="30000"
+                step="1500"
+                value={settings.density}
+                onChange={(e) => onControlChange("density", parseInt(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-white/80 text-sm">Couleur</label>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="color"
+                    value={settings.color === 'transparent' ? '#ffffff' : settings.color}
+                    onChange={(e) => onControlChange("color", e.target.value)}
+                    className="w-full h-8 rounded-lg border-2 border-white/10 cursor-pointer opacity-0 absolute inset-0"
+                  />
+                  <div 
+                    className="w-full h-8 rounded-lg border-2 border-white/10 pointer-events-none"
+                    style={{ 
+                      backgroundColor: settings.color === 'transparent' ? 'transparent' : settings.color,
+                      backgroundImage: settings.color === 'transparent' 
+                        ? 'linear-gradient(45deg, #ffffff 25%, transparent 25%, transparent 75%, #ffffff 75%, #ffffff), linear-gradient(45deg, #ffffff 25%, transparent 25%, transparent 75%, #ffffff 75%, #ffffff)'
+                        : 'none',
+                      backgroundSize: settings.color === 'transparent' ? '8px 8px' : undefined,
+                      backgroundPosition: settings.color === 'transparent' ? '0 0, 4px 4px' : undefined
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={handleReset}
+                  className={`px-3 py-1 rounded-lg text-sm ${
+                    settings.color === 'transparent'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white/10 text-white/80 hover:bg-white/20 hover:text-white'
+                  }`}
+                >
+                  Reset
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

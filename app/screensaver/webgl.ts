@@ -54,6 +54,22 @@ export function initWebGL(
   let vao: WebGLVertexArrayObject | null = null;
   let timeUniformLocation: WebGLUniformLocation | null = null;
   let resolutionUniformLocation: WebGLUniformLocation | null = null;
+  let currentDensity = 15000;
+  let positionBuffer: WebGLBuffer | null = null;
+
+  function updateParticles(density: number) {
+    if (!currentProgram || !vao || !positionBuffer) return;
+    
+    currentDensity = density;
+    const positions = new Float32Array(density * 2);
+    for (let i = 0; i < density * 2; i += 2) {
+      positions[i] = Math.random() * 2 - 1;
+      positions[i + 1] = Math.random() * 2 - 1;
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+  }
 
   function initPattern(patternIndex: number) {
     const pattern = patterns[patternIndex].shaders;
@@ -81,21 +97,28 @@ export function initWebGL(
       "resolution"
     );
 
+    const speedLocation = gl.getUniformLocation(currentProgram, 'u_speed');
+    if (speedLocation) gl.uniform1f(speedLocation, 1.0);
+
+    const densityLocation = gl.getUniformLocation(currentProgram, 'u_density');
+    if (densityLocation) gl.uniform1f(densityLocation, 1.0);
+
+    const colorLocation = gl.getUniformLocation(currentProgram, 'u_color');
+    if (colorLocation) gl.uniform3f(colorLocation, -1.0, -1.0, -1.0);
+
     if (vao) {
       gl.deleteVertexArray(vao);
     }
     vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
 
-    const positions = new Float32Array(NUM_PARTICLES * 2);
-    for (let i = 0; i < NUM_PARTICLES * 2; i += 2) {
-      positions[i] = Math.random() * 2 - 1;
-      positions[i + 1] = Math.random() * 2 - 1;
+    if (positionBuffer) {
+      gl.deleteBuffer(positionBuffer);
     }
+    positionBuffer = gl.createBuffer();
+    
+    updateParticles(currentDensity);
 
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(positionAttributeLocation);
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
   }
@@ -140,21 +163,26 @@ export function initWebGL(
       );
     }
 
-    gl.drawArrays(gl.POINTS, 0, NUM_PARTICLES);
+    gl.drawArrays(gl.POINTS, 0, currentDensity);
 
     requestAnimationFrame(render);
   }
 
   render();
 
-  return (newPatternIndex: number) => {
-    if (
-      newPatternIndex >= 0 &&
-      newPatternIndex < patterns.length &&
-      newPatternIndex !== currentPatternIndex
-    ) {
-      currentPatternIndex = newPatternIndex;
-      initPattern(currentPatternIndex);
+  return {
+    changePattern: (newPatternIndex: number) => {
+      if (
+        newPatternIndex >= 0 &&
+        newPatternIndex < patterns.length &&
+        newPatternIndex !== currentPatternIndex
+      ) {
+        currentPatternIndex = newPatternIndex;
+        initPattern(currentPatternIndex);
+      }
+    },
+    updateDensity: (newDensity: number) => {
+      updateParticles(newDensity);
     }
   };
 }
