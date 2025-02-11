@@ -7,6 +7,7 @@ import NavigationBar from "./components/NavigationBar";
 import SettingsPanel from "./components/SettingsPanel";
 import { patterns } from "./screensaver/patterns";
 import { initWebGL } from "./screensaver/webgl";
+import { Image, Wallpaper } from "lucide-react";
 
 const DEFAULT_SETTINGS = {
   color: "#ffffff",
@@ -105,12 +106,29 @@ export default function Home() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = (format: 'png' | 'scr') => {
     if (canvasRef.current) {
       const link = document.createElement("a");
-      link.download = `screensaver-${patterns[currentPattern].name}.png`;
-      link.href = canvasRef.current.toDataURL("image/png");
-      link.click();
+      const fileName = `screensaver-${patterns[currentPattern].name}`;
+      
+      if (format === 'png') {
+        link.download = `${fileName}.png`;
+        link.href = canvasRef.current.toDataURL("image/png");
+        link.click();
+      } else if (format === 'scr') {
+        const canvas = canvasRef.current;
+        const gl = canvas.getContext('webgl2');
+        if (!gl) return;
+        
+        const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+        gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        
+        const blob = new Blob([pixels], { type: 'application/octet-stream' });
+        link.download = `${fileName}.scr`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
     }
   };
 
@@ -144,7 +162,8 @@ export default function Home() {
 
           <ActionToolbar
             onFullscreen={handleFullscreen}
-            onDownload={handleDownload}
+            onDownloadPNG={() => handleDownload('png')}
+            onDownloadSCR={() => handleDownload('scr')}
             isFullscreen={isFullscreen}
           />
         </div>
