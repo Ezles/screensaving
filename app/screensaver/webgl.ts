@@ -129,15 +129,17 @@ export function initWebGL(
     if (!currentProgram || !vao) return;
 
     if (gl.canvas instanceof HTMLCanvasElement) {
-      const displayWidth = gl.canvas.clientWidth;
-      const displayHeight = gl.canvas.clientHeight;
-      if (
-        gl.canvas.width !== displayWidth ||
-        gl.canvas.height !== displayHeight
-      ) {
+      const displayWidth = window.innerWidth * window.devicePixelRatio;
+      const displayHeight = window.innerHeight * window.devicePixelRatio;
+      
+      if (gl.canvas.width !== displayWidth || gl.canvas.height !== displayHeight) {
         gl.canvas.width = displayWidth;
         gl.canvas.height = displayHeight;
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.viewport(0, 0, displayWidth, displayHeight);
+        
+        // Ajuster la taille CSS du canvas
+        gl.canvas.style.width = `${window.innerWidth}px`;
+        gl.canvas.style.height = `${window.innerHeight}px`;
       }
     }
 

@@ -96,8 +96,23 @@ export default function Home() {
     const canvas = canvasRef.current;
     
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      if (!canvasRef.current) return;
+      const canvas = canvasRef.current;
+      
+      // Ajuster la taille physique du canvas en tenant compte du DPR
+      const dpr = window.devicePixelRatio;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      
+      // Ajuster la taille d'affichage CSS
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      
+      // Si le contexte WebGL existe, ajuster le viewport
+      const gl = canvas.getContext('webgl2');
+      if (gl) {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
     };
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
@@ -222,7 +237,11 @@ export default function Home() {
     <main className="relative w-screen h-screen overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="absolute top-0 left-0 w-full h-full bg-black"
+        className="absolute top-0 left-0 w-full h-full bg-black object-cover"
+        style={{
+          touchAction: 'none',
+          imageRendering: 'pixelated'
+        }}
       />
 
       <div
