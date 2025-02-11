@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import ActionToolbar from "./components/ActionToolbar";
 import ModeIndicator from "./components/ModeIndicator";
 import NavigationBar from "./components/NavigationBar";
@@ -26,6 +26,38 @@ export default function Home() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const glRef = useRef<WebGL2RenderingContext | null>(null);
+
+  const applySettings = useCallback(() => {
+    if (!glRef.current || !webGLRef.current) return;
+
+    const gl = glRef.current;
+    const program = gl.getParameter(gl.CURRENT_PROGRAM);
+    if (!program) return;
+
+    const speedLocation = gl.getUniformLocation(program, 'u_speed');
+    if (speedLocation) {
+      gl.uniform1f(speedLocation, currentSettings.speed / 50.0);
+    }
+
+    const densityLocation = gl.getUniformLocation(program, 'u_density');
+    if (densityLocation) {
+      gl.uniform1f(densityLocation, currentSettings.density / 15000.0);
+    }
+
+    const colorLocation = gl.getUniformLocation(program, 'u_color');
+    if (colorLocation) {
+      if (currentSettings.color === 'transparent') {
+        gl.uniform3f(colorLocation, -1.0, -1.0, -1.0);
+      } else {
+        const r = parseInt(currentSettings.color.substr(1,2), 16) / 255;
+        const g = parseInt(currentSettings.color.substr(3,2), 16) / 255;
+        const b = parseInt(currentSettings.color.substr(5,2), 16) / 255;
+        gl.uniform3f(colorLocation, r, g, b);
+      }
+    }
+
+    webGLRef.current.updateDensity(currentSettings.density);
+  }, [currentSettings]);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -91,43 +123,11 @@ export default function Home() {
     return () => {
       window.removeEventListener("resize", resizeCanvas);
     };
-  }, [currentPattern]);
+  }, [currentPattern, applySettings]);
 
   useEffect(() => {
     applySettings();
-  }, [currentSettings]);
-
-  const applySettings = () => {
-    if (!glRef.current || !webGLRef.current) return;
-
-    const gl = glRef.current;
-    const program = gl.getParameter(gl.CURRENT_PROGRAM);
-    if (!program) return;
-
-    const speedLocation = gl.getUniformLocation(program, 'u_speed');
-    if (speedLocation) {
-      gl.uniform1f(speedLocation, currentSettings.speed / 50.0);
-    }
-
-    const densityLocation = gl.getUniformLocation(program, 'u_density');
-    if (densityLocation) {
-      gl.uniform1f(densityLocation, currentSettings.density / 15000.0);
-    }
-
-    const colorLocation = gl.getUniformLocation(program, 'u_color');
-    if (colorLocation) {
-      if (currentSettings.color === 'transparent') {
-        gl.uniform3f(colorLocation, -1.0, -1.0, -1.0);
-      } else {
-        const r = parseInt(currentSettings.color.substr(1,2), 16) / 255;
-        const g = parseInt(currentSettings.color.substr(3,2), 16) / 255;
-        const b = parseInt(currentSettings.color.substr(5,2), 16) / 255;
-        gl.uniform3f(colorLocation, r, g, b);
-      }
-    }
-
-    webGLRef.current.updateDensity(currentSettings.density);
-  };
+  }, [currentSettings, applySettings]);
 
   const handlePatternChange = (index: number) => {
     setCurrentPattern(index);

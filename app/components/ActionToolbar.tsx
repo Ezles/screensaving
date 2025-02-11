@@ -49,7 +49,7 @@ export default function ActionToolbar({
               }}
               className="w-full text-left px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
             >
-              <Image size={18} />
+              <Image size={18} aria-hidden="true" />
               Format PNG
             </button>
             <button
@@ -59,7 +59,7 @@ export default function ActionToolbar({
               }}
               className="w-full text-left px-4 py-2 text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
             >
-              <Wallpaper size={18} />
+              <Wallpaper size={18} aria-hidden="true" />
               Format SCR
             </button>
           </div>

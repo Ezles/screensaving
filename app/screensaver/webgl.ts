@@ -2,8 +2,6 @@
 
 import { patterns } from "./patterns";
 
-const NUM_PARTICLES = 15000;
-
 function createShader(
   gl: WebGL2RenderingContext,
   type: number,
