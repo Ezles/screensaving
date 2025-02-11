@@ -7,6 +7,7 @@ import NavigationBar from "./components/NavigationBar";
 import SettingsPanel from "./components/SettingsPanel";
 import { patterns } from "./screensaver/patterns";
 import { initWebGL } from "./screensaver/webgl";
+import { Image, Wallpaper } from "lucide-react";
 
 const DEFAULT_SETTINGS = {
   color: "#ffffff",
@@ -58,15 +59,24 @@ export default function Home() {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
+    
+    // Gérer le redimensionnement
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
-
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    const gl = canvas.getContext("webgl2");
+    // Initialiser WebGL avec les bonnes options
+    const gl = canvas.getContext('webgl2', {
+      preserveDrawingBuffer: true,
+      antialias: true,
+      alpha: true,
+      premultipliedAlpha: false,
+      depth: true
+    });
+
     if (!gl) {
       console.error("WebGL2 not supported");
       return;
@@ -105,31 +115,72 @@ export default function Home() {
     }
   };
 
-  const handleDownload = (format: 'png' | 'scr') => {
-    if (canvasRef.current) {
-      const link = document.createElement("a");
-      const fileName = `screensaver-${patterns[currentPattern].name}`;
-      
-      if (format === 'png') {
-        link.download = `${fileName}.png`;
-        link.href = canvasRef.current.toDataURL("image/png");
+  const formatFileName = (baseName: string, format: string) => {
+    const date = new Date().toISOString().split('T')[0];
+    const sanitizedName = baseName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    return `screensaver_${sanitizedName}_${date}.${format}`;
+  };
+
+  const handleDownload = async (format: 'png' | 'scr') => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const fileName = formatFileName(patterns[currentPattern].name, format);
+  
+    if (format === 'png') {
+      try {
+        // Créer un canvas temporaire avec les bonnes dimensions
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const ctx = tempCanvas.getContext('2d');
+        if (!ctx) return;
+
+        // Copier le contenu du WebGL canvas
+        const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
+        if (gl) {
+          gl.flush();
+          gl.finish();
+        }
+
+        // Dessiner le canvas WebGL sur le canvas temporaire
+        ctx.drawImage(canvas, 0, 0);
+
+        // Télécharger l'image
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = tempCanvas.toDataURL('image/png', 1.0);
+        document.body.appendChild(link);
         link.click();
-      } else if (format === 'scr') {
-        const canvas = canvasRef.current;
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Erreur lors de la capture PNG:', error);
+      }
+    } else if (format === 'scr') {
+      try {
         const gl = canvas.getContext('webgl2');
         if (!gl) return;
-        
+
+        gl.flush();
+        gl.finish();
+
         const pixels = new Uint8Array(canvas.width * canvas.height * 4);
         gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
         
         const blob = new Blob([pixels], { type: 'application/octet-stream' });
-        link.download = `${fileName}.scr`;
+        const link = document.createElement('a');
+        link.download = fileName;
         link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
+      } catch (error) {
+        console.error('Erreur lors de la création du SCR:', error);
       }
     }
   };
+  
+  
 
   return (
     <main className="relative w-screen h-screen overflow-hidden">
