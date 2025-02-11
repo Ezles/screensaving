@@ -20,6 +20,39 @@ export default function Home() {
   const changePatternRef = useRef<((index: number) => void) | null>(null);
   const [isControlsOpen, setIsControlsOpen] = useState(false);
   const [currentSettings, setCurrentSettings] = useState(DEFAULT_SETTINGS);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const handleMouseMove = () => {
+      setIsFocusMode(false);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsFocusMode(true);
+      }, 3000);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    handleMouseMove();
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement !== null);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -58,14 +91,17 @@ export default function Home() {
     value: number | string | boolean
   ) => {
     setCurrentSettings((prev) => ({ ...prev, [id]: value }));
-    // TODO: Appliquer les changements au pattern WebGL
   };
 
   const handleFullscreen = async () => {
-    if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen();
-    } else {
-      await document.exitFullscreen();
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error("Erreur lors du changement de mode plein écran:", err);
     }
   };
 
@@ -85,34 +121,41 @@ export default function Home() {
         className="absolute top-0 left-0 w-full h-full bg-black"
       />
 
-      <ModeIndicator currentMode={patterns[currentPattern].name} />
+      <div
+        className={`relative z-10 w-full h-full transition-opacity duration-500 ${
+          isFocusMode ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <ModeIndicator currentMode={patterns[currentPattern].name} />
 
-      <NavigationBar
-        patterns={patterns}
-        currentPattern={currentPattern}
-        onPatternChange={handlePatternChange}
-      />
+        <NavigationBar
+          patterns={patterns}
+          currentPattern={currentPattern}
+          onPatternChange={handlePatternChange}
+        />
 
-      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
-        <h1 className="text-6xl font-bold text-white text-center mb-4">
-          Screensaver Pro
-        </h1>
-        <p className="text-xl text-white/80 text-center max-w-md px-4 mb-6">
-          Une collection de motifs visuels interactifs
-        </p>
+        <div className="flex flex-col items-center justify-center w-full h-full">
+          <h1 className="text-6xl font-bold text-white text-center mb-4">
+            Screensaver Pro
+          </h1>
+          <p className="text-xl text-white/80 text-center max-w-md px-4 mb-6">
+            Une collection de motifs visuels interactifs
+          </p>
 
-        <ActionToolbar
-          onFullscreen={handleFullscreen}
-          onDownload={handleDownload}
+          <ActionToolbar
+            onFullscreen={handleFullscreen}
+            onDownload={handleDownload}
+            isFullscreen={isFullscreen}
+          />
+        </div>
+
+        <SettingsPanel
+          isOpen={isControlsOpen}
+          onToggle={() => setIsControlsOpen(!isControlsOpen)}
+          onControlChange={handleControlChange}
+          settings={currentSettings}
         />
       </div>
-
-      <SettingsPanel
-        isOpen={isControlsOpen}
-        onToggle={() => setIsControlsOpen(!isControlsOpen)}
-        onControlChange={handleControlChange}
-        settings={currentSettings}
-      />
     </main>
   );
 }
