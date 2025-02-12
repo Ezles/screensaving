@@ -171,75 +171,6 @@ export default function Home() {
     }
   };
 
-  const formatFileName = (baseName: string, format: string) => {
-    const date = new Date().toISOString().split("T")[0];
-    const sanitizedName = baseName.toLowerCase().replace(/[^a-z0-9]/g, "-");
-    return `screensaver_${sanitizedName}_${date}.${format}`;
-  };
-
-  const handleDownload = async (format: "png" | "scr") => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const fileName = formatFileName(patterns[currentPattern].name, format);
-
-    if (format === "png") {
-      try {
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        const ctx = tempCanvas.getContext("2d");
-        if (!ctx) return;
-
-        const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
-        if (gl) {
-          gl.flush();
-          gl.finish();
-        }
-
-        ctx.drawImage(canvas, 0, 0);
-
-        const link = document.createElement("a");
-        link.download = fileName;
-        link.href = tempCanvas.toDataURL("image/png", 1.0);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (error) {
-        console.error("Erreur lors de la capture PNG:", error);
-      }
-    } else if (format === "scr") {
-      try {
-        const gl = canvas.getContext("webgl2");
-        if (!gl) return;
-
-        gl.flush();
-        gl.finish();
-
-        const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-        gl.readPixels(
-          0,
-          0,
-          canvas.width,
-          canvas.height,
-          gl.RGBA,
-          gl.UNSIGNED_BYTE,
-          pixels
-        );
-
-        const blob = new Blob([pixels], { type: "application/octet-stream" });
-        const link = document.createElement("a");
-        link.download = fileName;
-        link.href = URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-      } catch (error) {
-        console.error("Erreur lors de la création du SCR:", error);
-      }
-    }
-  };
-
   return (
     <main
       className="relative w-screen h-screen overflow-hidden bg-black"
@@ -277,7 +208,6 @@ export default function Home() {
 
           <ActionToolbar
             onFullscreen={handleFullscreen}
-            onDownloadPNG={() => handleDownload("png")}
             isFullscreen={isFullscreen}
           />
         </div>

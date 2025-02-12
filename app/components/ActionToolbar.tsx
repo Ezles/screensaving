@@ -1,26 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import {
   FiDownload,
-  FiFile,
-  FiImage,
   FiMaximize2,
   FiMinimize2,
 } from "react-icons/fi";
 
 interface ActionToolbarProps {
   onFullscreen: () => void;
-  onDownloadPNG: () => void;
   isFullscreen: boolean;
 }
 
 export default function ActionToolbar({
   onFullscreen,
-  onDownloadPNG,
   isFullscreen,
 }: ActionToolbarProps) {
-  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const downloadButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
